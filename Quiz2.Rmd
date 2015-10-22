@@ -6,8 +6,6 @@ output:
   html_document:
     keep_md: yes
   fig.width: 6
-  pdf_document:
-    latex_engine: xelatex
 ---
 
 1. Consider the following data with x as the predictor and y as as the outcome.

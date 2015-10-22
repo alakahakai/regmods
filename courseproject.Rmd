@@ -1,0 +1,83 @@
+---
+title: "Motor Trend Data Analysis"
+author: "Ray Qiu"
+date: "October 22, 2015"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document: default
+subtitle: Regression Models Course Project
+---
+
+## Executive Summary
+
+#### This analysis uses some data science techniques to analyze the mtcars data set, and explore the relationship between a set of variables and miles per gallon (MPG) (outcome).  The key findings are:
+* Manual transmission is better than automatic transmission for MPG.
+* The ratio between manual and automatic transmission for MPG is 1.806099, adjusted by cyl, disp, hp, and wt.
+
+---
+#### Load required R libraries
+```{r message=FALSE}
+library(ggplot2)
+library(gridExtra)
+```
+
+#### Load the mtcars data and perform some basic exploratory data analysis.
+```{r}
+data(mtcars)
+# Convert cyl, am and gear to factors
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$am <- factor(mtcars$am, labels = c("automatic", "manual"))
+mtcars$gear <- as.factor(mtcars$gear)
+```
+
+#### Based on Plot #1 in Appendix, we can conclude the following: Manual transmission is better than automatic transmission for MPG.
+
+#### Let's try to see what other variables should be included in the model
+```{r}
+anova(lm(mpg ~ ., data = mtcars))
+```
+
+We can pick the variables that has a p-value close to 0.05, which are: cyl, disp, hp, wt, and am. 
+```{r}
+fit2 <- lm(mpg ~ cyl + disp + hp + wt + am, data = mtcars)
+summary(fit2)
+```
+
+Now, the "Adjusted R-squared" is 0.8344, which we believe is a good fit model for the data. 
+
+#### Answer to Question #2: Cars with Manual transmission get better MPG than Automatic transmission, and the coefficient is 1.806099, adjusted by cyl, disp, hp, and wt.
+
+\pagebreak
+
+## Appendix: Plots for the model
+#### Plot to show the relationships between mpg and manual/automatic transmission.
+```{r}
+p <- ggplot(mtcars, aes(x = am, y = mpg)) + 
+    ggtitle("mpg per transmission type") +
+    geom_boxplot(aes(fill = am)) +
+    theme(text = element_text(size=6), axis.text.x = element_text(angle = 45, hjust = 1))
+grid.arrange(p, ncol = 2, nrow = 2) # Use grid to make the plot smaller (1/4 size)
+```
+
+#### Plots for the model
+
+```{r}
+mtcars <- fortify(fit2)
+plot1 <- ggplot(data = mtcars, aes(x = .fitted, y = .resid)) +
+    geom_hline(yintercept = 0, colour = "firebrick3") +
+    geom_point() +
+    geom_smooth(se = FALSE, method = loess)
+plot2 <- ggplot(data = mtcars, aes(sample = .stdresid)) +
+  stat_qq() +
+  geom_abline(colour = "firebrick3")
+plot3 <- ggplot(data = mtcars, aes(x = .fitted, y = sqrt(abs(.stdresid)))) + 
+    geom_point() +
+    geom_smooth(se = FALSE, method = loess)
+plot4 <- ggplot(data = mtcars, aes(.hat, .stdresid)) +
+    geom_vline(size = 2, colour = "white", xintercept = 0) +
+    geom_hline(size = 2, colour = "white", yintercept = 0) +
+    geom_point() + 
+    geom_smooth(se = FALSE, method = loess)
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
+```
