@@ -1,0 +1,62 @@
+---
+title: "Regression Models (Quiz 3)"
+author: "Ray Qiu"
+date: "October 22, 2015"
+output:
+    html_document:
+    keep_md: yes
+fig.width: 6
+---
+
+#### Question 1: Consider the mtcars data set. Fit a model with mpg as the outcome that includes number of cylinders as a factor variable and weight as confounder. Give the adjusted estimate for the expected change in mpg comparing 8 cylinders to 4.
+```{r}
+fit <- lm(mpg ~ factor(cyl) + wt, data = mtcars)
+round(summary(fit)$coefficient[3,1], 3)
+```
+
+#### Question 2:Consider the mtcars data set. Fit a model with mpg as the outcome that includes number of cylinders as a factor variable and weight as a possible confounding variable. Compare the effect of 8 versus 4 cylinders on mpg for the adjusted and unadjusted by weight models. Here, adjusted means including the weight variable as a term in the regression model and unadjusted means the model without weight included. What can be said about the effect comparing 8 and 4 cylinders after looking at models with and without weight included?
+```{r}
+fit <- lm(mpg ~ factor(cyl), data = mtcars)
+fit2 <- lm(mpg ~ factor(cyl) + wt, data = mtcars)
+summary(fit)$coefficient[3,1]
+summary(fit2)$coefficient[3,1]
+```
+
+#### Question 3: Consider the mtcars data set. Fit a model with mpg as the outcome that considers number of cylinders as a factor variable and weight as confounder. Now fit a second model with mpg as the outcome model that considers the interaction between number of cylinders (as a factor variable) and weight. Give the P-value for the likelihood ratio test comparing the two models and suggest a model using 0.05 as a type I error rate significance benchmark.
+```{r}
+library(lmtest)
+fit <- lm(mpg ~ factor(cyl) + wt, data = mtcars)
+fit2 <- lm(mpg ~ factor(cyl) * wt, data = mtcars)
+summary(fit)
+summary(fit2)
+lrtest(fit, fit2)
+```
+
+#### Question 4: Consider the mtcars data set. Fit a model with mpg as the outcome that includes number of cylinders as a factor variable and weight inlcuded in the model as lm(mpg ~ I(wt * 0.5) + factor(cyl), data = mtcars). How is the wt coefficient interpretted?
+```{r}
+lm(mpg ~ I(wt * 0.5) + factor(cyl), data = mtcars)
+```
+
+* Since 1 ton == 2000 lbs, the estimated expected change in MPG per half ton increase in weight for for a specific number of cylinders (4, 6, 8).
+
+#### Consider the following data set: x <- c(0.586, 0.166, -0.042, -0.614, 11.72), y <- c(0.549, -0.026, -0.127, -0.751, 1.344). Give the hat diagonal for the most influential point
+```{r}
+x <- c(0.586, 0.166, -0.042, -0.614, 11.72)
+y <- c(0.549, -0.026, -0.127, -0.751, 1.344)
+fit <- lm(y ~ x)
+hatvalues(fit)
+```
+
+#### Question 6: Consider the following data set: x <- c(0.586, 0.166, -0.042, -0.614, 11.72), y <- c(0.549, -0.026, -0.127, -0.751, 1.344). Give the slope dfbeta for the point with the highest hat value.
+```{r}
+x <- c(0.586, 0.166, -0.042, -0.614, 11.72)
+y <- c(0.549, -0.026, -0.127, -0.751, 1.344)
+fit <- lm(y ~ x)
+# 5 has the highest hat value
+dfbetas(fit)[,2][5]
+```
+
+#### Question 7: Consider a regression relationship between Y and X with and without adjustment for a third variable Z. Which of the following is true about comparing the regression coefficient between Y and X with and without adjustment for Z.
+
+* It is possible for the coefficient to reverse sign after adjustment. For example, it can be strongly significant and positive before adjustment and strongly significant and negative after adjustment.
+
